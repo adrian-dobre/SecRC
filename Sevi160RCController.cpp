@@ -1,8 +1,10 @@
 #include "Sevi160RCController.h"
 
 namespace Sevi160RCControllerNs {
-Sevi16RCFanSpeed currentFanSpeed = Sevi16RCFanSpeed::One;
-Sevi16RCVentilationMode currentVentilationMode = Sevi16RCVentilationMode::HRV;
+Sevi16RCFanSpeed currentFanSpeed = Sevi16RCFanSpeed::UnknownFanSpeed;
+Sevi16RCVentilationMode currentVentilationMode =
+    Sevi16RCVentilationMode::UnknownVentilationMode;
+int filterResetLedPin = -1;
 bool filterChangeRequired = false;
 void setRCControllerFanSpeed(Sevi16RCFanSpeed fanSpeed) {
     currentFanSpeed = fanSpeed;
@@ -31,56 +33,50 @@ void IRAM_ATTR setHrvVentilationMode() {
 void IRAM_ATTR setBypassVentilationMode() {
     setCurrentVentilationMode(Sevi16RCVentilationMode::Bypass);
 }
-void IRAM_ATTR setFilterChangeRequiredOn() { setFilterChangeRequired(true); }
-void IRAM_ATTR setFilterChangeRequiredOff() { setFilterChangeRequired(false); }
+void IRAM_ATTR setFilterChangeRequired() {
+    if (filterResetLedPin != -1) {
+        setFilterChangeRequired(digitalRead(filterResetLedPin));
+    }
+}
 }  // namespace Sevi160RCControllerNs
 
-Sevi160RCController::Sevi160RCController(Sevi160RCIOConfig ioConfig) {
-    Sevi160RCController::ioConfig = ioConfig;
-    pinMode(Sevi160RCController::ioConfig.fanSpeed1LedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.fanSpeed1LedPin),
-        Sevi160RCControllerNs::setFanSpeed1, HIGH);
-    pinMode(Sevi160RCController::ioConfig.fanSpeed2LedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.fanSpeed2LedPin),
-        Sevi160RCControllerNs::setFanSpeed2, HIGH);
-    pinMode(Sevi160RCController::ioConfig.fanSpeed3LedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.fanSpeed3LedPin),
-        Sevi160RCControllerNs::setFanSpeed3, HIGH);
-    pinMode(Sevi160RCController::ioConfig.fanSpeed4LedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.fanSpeed4LedPin),
-        Sevi160RCControllerNs::setFanSpeed4, HIGH);
+Sevi160RCController::Sevi160RCController(Sevi160RCIOConfig config) {
+    Sevi160RCController::ioConfig = config;
+    pinMode(ioConfig.fanSpeed1LedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.fanSpeed1LedPin),
+                    Sevi160RCControllerNs::setFanSpeed1, HIGH);
+    pinMode(ioConfig.fanSpeed2LedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.fanSpeed2LedPin),
+                    Sevi160RCControllerNs::setFanSpeed2, HIGH);
+    pinMode(ioConfig.fanSpeed3LedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.fanSpeed3LedPin),
+                    Sevi160RCControllerNs::setFanSpeed3, HIGH);
+    pinMode(ioConfig.fanSpeed4LedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.fanSpeed4LedPin),
+                    Sevi160RCControllerNs::setFanSpeed4, HIGH);
 
-    pinMode(Sevi160RCController::ioConfig.hrvModeLedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.hrvModeLedPin),
-        Sevi160RCControllerNs::setHrvVentilationMode, HIGH);
-    pinMode(Sevi160RCController::ioConfig.bypassModeLedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.bypassModeLedPin),
-        Sevi160RCControllerNs::setBypassVentilationMode, HIGH);
+    pinMode(ioConfig.hrvModeLedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.hrvModeLedPin),
+                    Sevi160RCControllerNs::setHrvVentilationMode, HIGH);
+    pinMode(ioConfig.bypassModeLedPin, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(ioConfig.bypassModeLedPin),
+                    Sevi160RCControllerNs::setBypassVentilationMode, HIGH);
 
-    pinMode(Sevi160RCController::ioConfig.filterResetLedPin, INPUT_PULLDOWN);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.filterResetLedPin),
-        Sevi160RCControllerNs::setFilterChangeRequiredOn, HIGH);
-    attachInterrupt(
-        digitalPinToInterrupt(Sevi160RCController::ioConfig.filterResetLedPin),
-        Sevi160RCControllerNs::setFilterChangeRequiredOff, LOW);
+    pinMode(ioConfig.filterResetLedPin, INPUT_PULLDOWN);
+    Sevi160RCControllerNs::filterResetLedPin = ioConfig.filterResetLedPin;
+    attachInterrupt(digitalPinToInterrupt(ioConfig.filterResetLedPin),
+                    Sevi160RCControllerNs::setFilterChangeRequired, CHANGE);
 
-    pinMode(Sevi160RCController::ioConfig.powerButtonPin, OUTPUT);
-    digitalWrite(Sevi160RCController::ioConfig.powerButtonPin, 1);
-    pinMode(Sevi160RCController::ioConfig.hrvModeButtonPin, OUTPUT);
-    digitalWrite(Sevi160RCController::ioConfig.hrvModeButtonPin, 1);
-    pinMode(Sevi160RCController::ioConfig.bypassModeButtonPin, OUTPUT);
-    digitalWrite(Sevi160RCController::ioConfig.bypassModeButtonPin, 1);
-    pinMode(Sevi160RCController::ioConfig.fanSpeedButtonPin, OUTPUT);
-    digitalWrite(Sevi160RCController::ioConfig.fanSpeedButtonPin, 1);
-    pinMode(Sevi160RCController::ioConfig.filterResetButtonPin, OUTPUT);
-    digitalWrite(Sevi160RCController::ioConfig.filterResetButtonPin, 1);
+    pinMode(ioConfig.powerButtonPin, OUTPUT);
+    digitalWrite(ioConfig.powerButtonPin, 1);
+    pinMode(ioConfig.hrvModeButtonPin, OUTPUT);
+    digitalWrite(ioConfig.hrvModeButtonPin, 1);
+    pinMode(ioConfig.bypassModeButtonPin, OUTPUT);
+    digitalWrite(ioConfig.bypassModeButtonPin, 1);
+    pinMode(ioConfig.fanSpeedButtonPin, OUTPUT);
+    digitalWrite(ioConfig.fanSpeedButtonPin, 1);
+    pinMode(ioConfig.filterResetButtonPin, OUTPUT);
+    digitalWrite(ioConfig.filterResetButtonPin, 1);
 }
 
 Sevi16RCFanSpeed Sevi160RCController::getCurrentFanSpeed() {
@@ -101,8 +97,8 @@ bool Sevi160RCController::isControlPanelAwake() {
 }
 
 void Sevi160RCController::ensureControlPanelIsAwake() {
-    if (!isControlPanelAwake()) {
-        sendControlPanelCommand();
+    while (!isControlPanelAwake()) {
+        awakeControlPanel();
     }
 }
 
@@ -112,6 +108,13 @@ void Sevi160RCController::awakeControlPanel() {
 
 void Sevi160RCController::sendControlPanelCommand(
     int buttonPin, bool ensureControlPanelIsAwake, int commandTime) {
+    /**
+     * give the panel time to boot
+     * if commands are sent before the panel has the chance to boot, it will get stuck at boot
+     */
+    if (millis() < 10000) {
+        return;
+    }
     if (ensureControlPanelIsAwake) {
         Sevi160RCController::ensureControlPanelIsAwake();
     }
@@ -149,6 +152,6 @@ Sevi160RCStatus Sevi160RCController::getStatus() {
     Sevi160RCStatus status = {
         .fanSpeed = getCurrentFanSpeed(),
         .mode = getCurrentVentilationMode(),
-        .filterChangeRequired = getFilterChangeRequired()
-    }
+        .filterChangeRequired = getFilterChangeRequired()};
+    return status;
 }

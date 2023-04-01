@@ -4,24 +4,24 @@ Sevi160RCController *controller;
 
 void setup() {
     Serial.begin(115200);
-    Sevi160RCIOConfig config = {.fanSpeed1LedPin = 1,
-                                .fanSpeed2LedPin = 2,
-                                .fanSpeed3LedPin = 3,
-                                .fanSpeed4LedPin = 4,
-                                .hrvModeLedPin = 5,
-                                .bypassModeLedPin = 6,
-                                .filterResetLedPin = 7,
-                                .fanSpeedButtonPin = 8,
-                                .hrvModeButtonPin = 9,
-                                .bypassModeButtonPin = 10,
-                                .filterResetButtonPin = 11,
-                                .powerButtonPin = 12};
+    Sevi160RCIOConfig config = {.fanSpeed1LedPin = 34,
+                                .fanSpeed2LedPin = 35,
+                                .fanSpeed3LedPin = 36,
+                                .fanSpeed4LedPin = 39,
+                                .hrvModeLedPin = 33,
+                                .bypassModeLedPin = 32,
+                                .filterResetLedPin = 27,
+                                .powerButtonPin = 13,
+                                .fanSpeedButtonPin = 26,
+                                .hrvModeButtonPin = 25,
+                                .bypassModeButtonPin = 14,
+                                .filterResetButtonPin = 4};
     controller = new Sevi160RCController(config);
 }
 
 void loop() {
-    controller->changeVentilationMode(Sevi16RCVentilationMode.HRV);
-    controller->changeFanSpeed(Sevi16RCFanSpeed.One);
+    controller->changeVentilationMode(Sevi16RCVentilationMode::HRV);
+    controller->changeFanSpeed(Sevi16RCFanSpeed::Three);
     // controller->resetFilterChangeStatus();
     // controller->toggleOnOff();
     Sevi160RCStatus controllerStatus = controller->getStatus();
@@ -30,6 +30,6 @@ void loop() {
     Serial.print(" Fan Speed: ");
     Serial.print(controllerStatus.fanSpeed);
     Serial.print(" Filter change required: ");
-    Serial.print(controllerStatus.filterChangeRequired ? "Yes" : "No");
-    delay(3000);
+    Serial.println(controllerStatus.filterChangeRequired);
+    delay(60000);
 }
