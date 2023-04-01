@@ -18,9 +18,19 @@ struct Sevi160RCIOConfig {
     int filterResetButtonPin;
 };
 
-enum Sevi16RCFanSpeed { One = 1, Two = 2, Three = 3, Four = 4 };
+enum Sevi16RCFanSpeed {
+    UnknownFanSpeed = 0,
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4
+};
 
-enum Sevi16RCVentilationMode { HRV = 1, Bypass = 2 };
+enum Sevi16RCVentilationMode {
+    UnknownVentilationMode = 0,
+    HRV = 1,
+    Bypass = 2
+};
 
 struct Sevi160RCStatus {
     Sevi16RCFanSpeed fanSpeed;
