@@ -1,9 +1,9 @@
-#ifndef Sevi160RCController_h
-#define Sevi160RCController_h
+#ifndef SecRC_h
+#define SecRC_h
 
 #include "Arduino.h"
 
-struct Sevi160RCIOConfig {
+struct SecRCIOConfig {
     int fanSpeed1LedPin;
     int fanSpeed2LedPin;
     int fanSpeed3LedPin;
@@ -18,7 +18,7 @@ struct Sevi160RCIOConfig {
     int filterResetButtonPin;
 };
 
-enum Sevi16RCFanSpeed {
+enum SecRCFanSpeed {
     UnknownFanSpeed = 0,
     One = 1,
     Two = 2,
@@ -26,37 +26,33 @@ enum Sevi16RCFanSpeed {
     Four = 4
 };
 
-enum Sevi16RCVentilationMode {
-    UnknownVentilationMode = 0,
-    HRV = 1,
-    Bypass = 2
-};
+enum SecRCVentilationMode { UnknownVentilationMode = 0, HRV = 1, Bypass = 2 };
 
-struct Sevi160RCStatus {
-    Sevi16RCFanSpeed fanSpeed;
-    Sevi16RCVentilationMode mode;
+struct SecRCStatus {
+    SecRCFanSpeed fanSpeed;
+    SecRCVentilationMode mode;
     bool filterChangeRequired;
 };
 
-class Sevi160RCController {
+class SecRC {
    public:
-    Sevi160RCController(Sevi160RCIOConfig ioConfig);
-    void changeFanSpeed(Sevi16RCFanSpeed fanSpeed);
-    void changeVentilationMode(Sevi16RCVentilationMode ventilationMode);
+    SecRC(SecRCIOConfig ioConfig);
+    void changeFanSpeed(SecRCFanSpeed fanSpeed);
+    void changeVentilationMode(SecRCVentilationMode ventilationMode);
     void resetFilterChangeStatus();
     void toggleOnOff();
-    Sevi160RCStatus getStatus();
+    SecRCStatus getStatus(bool sync = false);
 
    private:
-    Sevi160RCIOConfig ioConfig;
+    SecRCIOConfig ioConfig;
     bool isControlPanelAwake();
     void awakeControlPanel();
     void ensureControlPanelIsAwake();
     void sendControlPanelCommand(int buttonPin,
                                  bool ensureControlPanelIsAwake = true,
                                  int commandTime = 300);
-    Sevi16RCFanSpeed getCurrentFanSpeed();
-    Sevi16RCVentilationMode getCurrentVentilationMode();
+    SecRCFanSpeed getCurrentFanSpeed();
+    SecRCVentilationMode getCurrentVentilationMode();
     bool getFilterChangeRequired();
 };
 
