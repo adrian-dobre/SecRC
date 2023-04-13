@@ -16,20 +16,14 @@ void setFilterChangeRequired(bool changeRequired) {
     filterChangeRequired = changeRequired;
 }
 void IRAM_ATTR setFanSpeed1() { setRCControllerFanSpeed(SecRCFanSpeed::One); }
-void IRAM_ATTR setFanSpeed2() {
-    setRCControllerFanSpeed(Sevi16RCFanSpeed::Two);
-}
-void IRAM_ATTR setFanSpeed3() {
-    setRCControllerFanSpeed(Sevi16RCFanSpeed::Three);
-}
-void IRAM_ATTR setFanSpeed4() {
-    setRCControllerFanSpeed(Sevi16RCFanSpeed::Four);
-}
+void IRAM_ATTR setFanSpeed2() { setRCControllerFanSpeed(SecRCFanSpeed::Two); }
+void IRAM_ATTR setFanSpeed3() { setRCControllerFanSpeed(SecRCFanSpeed::Three); }
+void IRAM_ATTR setFanSpeed4() { setRCControllerFanSpeed(SecRCFanSpeed::Four); }
 void IRAM_ATTR setHrvVentilationMode() {
-    setCurrentVentilationMode(Sevi16RCVentilationMode::HRV);
+    setCurrentVentilationMode(SecRCVentilationMode::HRV);
 }
 void IRAM_ATTR setBypassVentilationMode() {
-    setCurrentVentilationMode(Sevi16RCVentilationMode::Bypass);
+    setCurrentVentilationMode(SecRCVentilationMode::Bypass);
 }
 void IRAM_ATTR setFilterChangeRequired() {
     if (filterResetLedPin != -1) {
