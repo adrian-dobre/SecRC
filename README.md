@@ -1,6 +1,6 @@
 # SecRC
 
-A simple library to read and control the state of the (Seventilation Sec-RC control panel)[https://www.dezentrale-lueftung.com/en/shop/decentralised-ventilation-central-controller-sec-rc/].
+A simple library to read and control the state of the [Seventilation Sec-RC control panel](https://www.dezentrale-lueftung.com/en/shop/decentralised-ventilation-central-controller-sec-rc/).
 Using this library you could transform the basic SEC-RC control panel into a Wi-FI enabled control panel, if paired with something like an ESP-32.
 
 ## Some Notes
@@ -16,8 +16,8 @@ All the available commands are listed in the example.
 For wiring referece, please check the below picture
 Nore: There's also an optional +3V line if you want to power the panel via the microcontroller board (remove the need for a 3V battery).
 
-![Wiring-Reference](./resources/wiring-reference.jpeg?raw=true)
+![Wiring-Reference](./resources/wiring-reference.jpg?raw=true)
 
 It would look something like this:
 
-![Wiring-Example](./resources/wiring-example.jpeg?raw=true)
+![Wiring-Example](./resources/wiring-example.jpg?raw=true)
