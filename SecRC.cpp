@@ -15,20 +15,36 @@ void setCurrentVentilationMode(SecRCVentilationMode ventilationMode) {
 void setFilterChangeRequired(bool changeRequired) {
     filterChangeRequired = changeRequired;
 }
+
+void wait(int msec, int startTime = 0) {
+    if (startTime == 0) {
+        startTime = millis();
+    }
+    unsigned int elapsed = millis() - startTime;
+    if (elapsed < msec) {
+        return wait(msec, startTime);
+    }
+    return;
+}
+
+void checkFilterChangeStatus() {
+    if (filterResetLedPin != -1) {
+        wait(10);
+        setFilterChangeRequired(digitalRead(filterResetLedPin));
+    }
+}
+
 void IRAM_ATTR setFanSpeed1() { setRCControllerFanSpeed(SecRCFanSpeed::One); }
 void IRAM_ATTR setFanSpeed2() { setRCControllerFanSpeed(SecRCFanSpeed::Two); }
 void IRAM_ATTR setFanSpeed3() { setRCControllerFanSpeed(SecRCFanSpeed::Three); }
 void IRAM_ATTR setFanSpeed4() { setRCControllerFanSpeed(SecRCFanSpeed::Four); }
 void IRAM_ATTR setHrvVentilationMode() {
     setCurrentVentilationMode(SecRCVentilationMode::HRV);
+    checkFilterChangeStatus();
 }
 void IRAM_ATTR setBypassVentilationMode() {
     setCurrentVentilationMode(SecRCVentilationMode::Bypass);
-}
-void IRAM_ATTR setFilterChangeRequired() {
-    if (filterResetLedPin != -1) {
-        setFilterChangeRequired(digitalRead(filterResetLedPin));
-    }
+    checkFilterChangeStatus();
 }
 }  // namespace SecRCNs
 
@@ -56,8 +72,6 @@ SecRC::SecRC(SecRCIOConfig config) {
 
     pinMode(ioConfig.filterResetLedPin, INPUT_PULLDOWN);
     SecRCNs::filterResetLedPin = ioConfig.filterResetLedPin;
-    attachInterrupt(digitalPinToInterrupt(ioConfig.filterResetLedPin),
-                    SecRCNs::setFilterChangeRequired, CHANGE);
 
     pinMode(ioConfig.powerButtonPin, OUTPUT);
     digitalWrite(ioConfig.powerButtonPin, 1);
@@ -114,6 +128,7 @@ void SecRC::sendControlPanelCommand(int buttonPin,
 }
 
 void SecRC::changeFanSpeed(SecRCFanSpeed fanSpeed) {
+    ensureControlPanelIsAwake();
     SecRCFanSpeed currentFanSpeed = getCurrentFanSpeed();
     while (currentFanSpeed != fanSpeed) {
         sendControlPanelCommand(ioConfig.fanSpeedButtonPin);
@@ -130,7 +145,7 @@ void SecRC::changeVentilationMode(SecRCVentilationMode mode) {
 }
 
 void SecRC::resetFilterChangeStatus() {
-    sendControlPanelCommand(ioConfig.filterResetButtonPin);
+    sendControlPanelCommand(ioConfig.filterResetButtonPin, true, 6000);
 }
 
 void SecRC::toggleOnOff() {
