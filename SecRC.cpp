@@ -73,6 +73,8 @@ SecRC::SecRC(SecRCIOConfig config) {
     pinMode(ioConfig.filterResetLedPin, INPUT_PULLDOWN);
     SecRCNs::filterResetLedPin = ioConfig.filterResetLedPin;
 
+    pinMode(ioConfig.enablePin, OUTPUT);
+    digitalWrite(ioConfig.enablePin, LOW);
     pinMode(ioConfig.powerButtonPin, OUTPUT);
     digitalWrite(ioConfig.powerButtonPin, 1);
     pinMode(ioConfig.hrvModeButtonPin, OUTPUT);
@@ -83,12 +85,23 @@ SecRC::SecRC(SecRCIOConfig config) {
     digitalWrite(ioConfig.fanSpeedButtonPin, 1);
     pinMode(ioConfig.filterResetButtonPin, OUTPUT);
     digitalWrite(ioConfig.filterResetButtonPin, 1);
+    this->bootUp();
 }
 
 SecRCFanSpeed SecRC::getCurrentFanSpeed() { return SecRCNs::currentFanSpeed; }
 
 SecRCVentilationMode SecRC::getCurrentVentilationMode() {
     return SecRCNs::currentVentilationMode;
+}
+
+void SecRC::bootUp() {
+    // wait for Arduino boot (avoid boot-up glitches)
+    delay(3000);
+    // power-up the panel
+    digitalWrite(ioConfig.enablePin, HIGH);
+    delay(3000);
+    // start up the panel
+    sendControlPanelCommand(ioConfig.powerButtonPin, false, 3000);
 }
 
 bool SecRC::getFilterChangeRequired() { return SecRCNs::filterChangeRequired; }
@@ -111,13 +124,6 @@ void SecRC::awakeControlPanel() {
 void SecRC::sendControlPanelCommand(int buttonPin,
                                     bool ensureControlPanelIsAwake,
                                     int commandTime) {
-    /**
-     * give the panel time to boot. if commands are sent before the panel has
-     * the chance to boot, it will get stuck at boot
-     */
-    if (millis() < 10000) {
-        return;
-    }
     if (ensureControlPanelIsAwake) {
         SecRC::ensureControlPanelIsAwake();
     }

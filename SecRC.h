@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 struct SecRCIOConfig {
+    int enablePin;
     int fanSpeed1LedPin;
     int fanSpeed2LedPin;
     int fanSpeed3LedPin;
@@ -54,6 +55,7 @@ class SecRC {
     SecRCFanSpeed getCurrentFanSpeed();
     SecRCVentilationMode getCurrentVentilationMode();
     bool getFilterChangeRequired();
+    void bootUp();
 };
 
 #endif
